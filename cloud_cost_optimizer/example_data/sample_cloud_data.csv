@@ -1,0 +1,10 @@
+Resource_ID,Resource_Type,Region,Status,Usage_Hours,Cost
+i-0abcd1234,VM,us-east-1,Active,730,145.50
+i-0xyz98765,VM,us-west-2,Stopped,0,25.00
+i-0lmno4567,VM,eu-central-1,Idle,730,285.20
+vol-0123abc,Storage,us-east-1,Active,730,12.00
+vol-0456def,Storage,us-west-2,Active,730,8.50
+db-prod1,Database,us-east-1,Active,730,420.00
+db-dev1,Database,us-east-1,Stopped,0,145.00
+rdb-cache,Database,eu-central-1,Active,300,120.50
+i-0qqq777,VM,ap-south-1,Active,730,450.00
