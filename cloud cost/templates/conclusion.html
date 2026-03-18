@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 2rem;">
+    <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">Conclusion & Future Enhancements</h2>
+    <p style="color: var(--text-muted);">Final insights and roadmap for future upgrades of the Cloud Cost Optimization
+        Platform.</p>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+    <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--primary);">System Conclusion</h3>
+    <p style="color: var(--text-main); font-size: 1.05rem; line-height: 1.7; margin-bottom: 1rem;">
+        The internal mechanics of cloud cost management play a crucial role in modern enterprise operations. This
+        web-based <strong>Cloud Cost Optimization Platform</strong> was designed to successfully identify underutilized
+        resources, monitor spending patterns across regions, and automatically determine cost-saving recommendations.
+    </p>
+    <p style="color: var(--text-main); font-size: 1.05rem; line-height: 1.7;">
+        By providing users with detailed interactive dashboards and clear optimization actions (like rightsizing
+        instances and removing idle workloads), the platform empowers users to cut down unnecessary infrastructure
+        expenses and deploy a more cost-effective cloud environment.
+    </p>
+</div>
+
+<div class="card">
+    <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--accent);">Future Enhancements Roadmap</h3>
+
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+        <div
+            style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--secondary);">
+            <h4 style="font-size: 1.2rem; margin-bottom: 0.5rem;">1. Real-Time Cloud API Integration</h4>
+            <p style="color: var(--text-muted); line-height: 1.6;">
+                Future versions will integrate directly with provider APIs (AWS, Azure, GCP) to fetch active billing and
+                usage analytics in real-time, eliminating the need for manual CSV file uploads and keeping data
+                instantly up to date.
+            </p>
+        </div>
+
+        <div
+            style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border-left: 4px solid #F59E0B;">
+            <h4 style="font-size: 1.2rem; margin-bottom: 0.5rem;">2. Advanced User Analytics Over Time</h4>
+            <p style="color: var(--text-muted); line-height: 1.6;">
+                Implementing historical trend monitoring functionality. Users will be able to visualize cost drifts
+                explicitly across multiple billing cycles intuitively determining whether changes applied genuinely
+                impacted their overall bill.
+            </p>
+        </div>
+
+        <div
+            style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border-left: 4px solid #EC4899;">
+            <h4 style="font-size: 1.2rem; margin-bottom: 0.5rem;">3. Predictive Machine Learning</h4>
+            <p style="color: var(--text-muted); line-height: 1.6;">
+                Introducing ML algorithms (like ARIMA or Prophet) to forecast impending cloud costs effectively. By
+                analyzing past consumption behaviors, the platform could alert users to potential budget overruns before
+                they occur.
+            </p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

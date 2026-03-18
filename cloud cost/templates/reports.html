@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">Cost Analysis Reports</h2>
+        <p style="color: var(--text-muted);">View summaries of your cloud spending and download detailed reports.</p>
+    </div>
+    <div style="display: flex; gap: 1rem;">
+        <button class="btn" style="background: var(--surface); color: white; border: 1px solid rgba(255,255,255,0.1);" onclick="window.print()">Print / Save as PDF</button>
+        <a href="{{ url_for('download_report') }}" class="btn btn-accent">Download CSV</a>
+    </div>
+</div>
+
+{% if no_data %}
+<div class="card" style="text-align: center; padding: 4rem 2rem;">
+    <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">No Data Available</h3>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Upload a CSV file to generate reports.</p>
+    <a href="{{ url_for('upload') }}" class="btn">Upload Data Now</a>
+</div>
+{% else %}
+
+{% if files and files|length > 0 %}
+<div style="margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; background: var(--surface); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+    <label for="filenameFilter" style="font-weight: 500; color: var(--text-muted);">Analyzing Data From:</label>
+    <form method="GET" style="margin: 0;">
+        <select name="filename" id="filenameFilter" onchange="this.form.submit()" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 0.5rem 1rem; border-radius: 4px; outline: none; cursor: pointer;">
+            {% for f in files %}
+            <option value="{{ f }}" {% if f == selected_file %}selected{% endif %}>{{ f }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+{% endif %}
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card" style="margin-bottom: 0;">
+        <h3 style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem; text-transform: uppercase;">Total Evaluated Cost</h3>
+        <p style="font-size: 2rem; font-weight: 700;">${{ "{:,.2f}".format(summary.total_cost) }}</p>
+    </div>
+    
+    <div class="card" style="margin-bottom: 0;">
+        <h3 style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem; text-transform: uppercase;">Total Resources Analysed</h3>
+        <p style="font-size: 2rem; font-weight: 700; color: var(--secondary);">{{ summary.resource_count }}</p>
+    </div>
+    
+    <div class="card" style="margin-bottom: 0;">
+        <h3 style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem; text-transform: uppercase;">Average Cost per Resource</h3>
+        <p style="font-size: 2rem; font-weight: 700; color: var(--accent);">${{ "{:,.2f}".format(summary.avg_cost) }}</p>
+    </div>
+</div>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Detailed Cost Report</h3>
+            <p style="color: var(--text-muted);">Comprehensive list of all evaluated resources.</p>
+        </div>
+        
+        <!-- Filters -->
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                <label for="searchFilter" style="font-size: 0.85rem; color: var(--text-muted);">Search</label>
+                <input type="text" id="searchFilter" placeholder="Resource ID or Region..." style="padding: 0.5rem; width: 200px; font-size: 0.9rem;">
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                <label for="serviceFilter" style="font-size: 0.85rem; color: var(--text-muted);">Service</label>
+                <select id="serviceFilter" style="padding: 0.5rem; width: 150px; font-size: 0.9rem;">
+                    <option value="">All Services</option>
+                    {% for stype in resource_types %}
+                    <option value="{{ stype }}">{{ stype }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                <label style="font-size: 0.85rem; color: var(--text-muted);">Cost Range ($)</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="number" id="minCostFilter" placeholder="Min" style="padding: 0.5rem; width: 80px; font-size: 0.9rem;" min="0">
+                    <input type="number" id="maxCostFilter" placeholder="Max" style="padding: 0.5rem; width: 80px; font-size: 0.9rem;" min="0">
+                </div>
+            </div>
+            
+            <button id="clearFilters" class="btn" style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; align-self: flex-end;">Clear</button>
+        </div>
+    </div>
+    
+    {% if all_resources %}
+    <div style="overflow-x: auto;">
+        <table id="reportsTable" style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-muted);">
+                    <th style="padding: 1rem;">Resource ID</th>
+                    <th style="padding: 1rem;">Service</th>
+                    <th style="padding: 1rem;">Region</th>
+                    <th style="padding: 1rem;">Status</th>
+                    <th style="padding: 1rem;">Usage Hours</th>
+                    <th style="padding: 1rem;">Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in all_resources %}
+                <tr class="report-row" 
+                    data-id="{{ res.get('Resource_ID', '')|lower }}" 
+                    data-region="{{ res.get('Region', '')|lower }}" 
+                    data-service="{{ res.get('Resource_Type', '') }}" 
+                    data-cost="{{ res.get('Cost', 0) }}"
+                    style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='none'">
+                    
+                    <td style="padding: 1rem; font-weight: 500;">{{ res.get('Resource_ID', 'Unknown') }}</td>
+                    <td style="padding: 1rem;">
+                        <span style="background: rgba(99, 102, 241, 0.1); color: #818CF8; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;">{{ res.get('Resource_Type', 'Unknown') }}</span>
+                    </td>
+                    <td style="padding: 1rem; color: var(--text-muted);">{{ res.get('Region', 'Unknown') }}</td>
+                    <td style="padding: 1rem;">
+                        <span style="color: {% if res.get('Status', '')|lower in ['running', 'active'] %}var(--accent){% elif res.get('Status', '')|lower in ['stopped', 'terminated', 'idle'] %}var(--danger){% else %}var(--warning){% endif %};">
+                            {{ res.get('Status', 'Unknown')|title }}
+                        </span>
+                    </td>
+                    <td style="padding: 1rem; color: var(--text-muted);">{{ res.get('Usage_Hours', 0) }} hrs</td>
+                    <td style="padding: 1rem; font-weight: 600;">${{ "{:,.2f}".format(res.get('Cost', 0)) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div id="noResultsMsg" style="display: none; text-align: center; padding: 2rem; color: var(--text-muted);">No resources match the selected filters.</div>
+    </div>
+    {% else %}
+    <p style="color: var(--text-muted);">No records found.</p>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const searchInput = document.getElementById('searchFilter');
+    const serviceSelect = document.getElementById('serviceFilter');
+    const minCostInput = document.getElementById('minCostFilter');
+    const maxCostInput = document.getElementById('maxCostFilter');
+    const clearBtn = document.getElementById('clearFilters');
+    const rows = document.querySelectorAll('.report-row');
+    const noResultsMsg = document.getElementById('noResultsMsg');
+
+    function filterTable() {
+        const query = searchInput.value.toLowerCase();
+        const service = serviceSelect.value;
+        const minCost = parseFloat(minCostInput.value) || 0;
+        const maxCost = parseFloat(maxCostInput.value) || Infinity;
+        
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const id = row.getAttribute('data-id');
+            const region = row.getAttribute('data-region');
+            const rowService = row.getAttribute('data-service');
+            const cost = parseFloat(row.getAttribute('data-cost'));
+
+            const matchesSearch = id.includes(query) || region.includes(query);
+            const matchesService = service === "" || rowService === service;
+            const matchesCost = cost >= minCost && cost <= maxCost;
+
+            if (matchesSearch && matchesService && matchesCost) {
+                row.style.display = "";
+                visibleCount++;
+            } else {
+                row.style.display = "none";
+            }
+        });
+        
+        if (visibleCount === 0 && rows.length > 0) {
+            noResultsMsg.style.display = "block";
+        } else {
+            noResultsMsg.style.display = "none";
+        }
+    }
+
+    if(searchInput) {
+        searchInput.addEventListener('input', filterTable);
+        serviceSelect.addEventListener('change', filterTable);
+        minCostInput.addEventListener('input', filterTable);
+        maxCostInput.addEventListener('input', filterTable);
+        
+        clearBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            serviceSelect.value = '';
+            minCostInput.value = '';
+            maxCostInput.value = '';
+            filterTable();
+        });
+    }
+});
+</script>
+
+{% endif %}
+{% endblock %}

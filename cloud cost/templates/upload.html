@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 600px; margin: 2rem auto;">
+    <div class="card" style="text-align: center;">
+        <h2 style="margin-bottom: 1rem; font-size: 1.75rem;">Upload Cloud Data</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Upload your cloud resource usage CSV to get insights and optimization suggestions.</p>
+        
+        <div class="flash-messages" style="text-align: left;">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        
+        <form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data">
+            <div style="border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px; padding: 3rem 2rem; margin-bottom: 2rem; background: rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s;" id="drop-zone" onclick="document.getElementById('file-upload').click()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 48px; height: 48px; color: var(--primary); margin-bottom: 1rem;">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+                </svg>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" id="file-name">Click to browse or drag and drop</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">CSV files only (max 10MB)</p>
+                <input type="file" id="file-upload" name="file" accept=".csv" required style="display: none;" onchange="document.getElementById('file-name').textContent = this.files[0].name">
+            </div>
+            
+            <button type="submit" class="btn" style="width: 100%; font-size: 1.1rem; padding: 1rem;">Analyse Data</button>
+        </form>
+    </div>
+    
+    <div class="card" style="margin-top: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Expected CSV Format</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.95rem;">Ensure your CSV has the following headers for correct analysis:</p>
+        <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; overflow-x: auto; color: #E2E8F0;">
+            Resource_ID, Resource_Type, Region, Status, Cost, Usage_Hours
+        </div>
+    </div>
+</div>
+
+<script>
+    const dropZone = document.getElementById('drop-zone');
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'var(--primary)';
+        dropZone.style.background = 'rgba(99, 102, 241, 0.1)';
+    });
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = 'rgba(255,255,255,0.2)';
+        dropZone.style.background = 'rgba(0,0,0,0.1)';
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'rgba(255,255,255,0.2)';
+        dropZone.style.background = 'rgba(0,0,0,0.1)';
+        const input = document.getElementById('file-upload');
+        if (e.dataTransfer.files.length) {
+            input.files = e.dataTransfer.files;
+            document.getElementById('file-name').textContent = e.dataTransfer.files[0].name;
+        }
+    });
+</script>
+{% endblock %}

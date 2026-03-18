@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 2rem;">
+    <h2 style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--warning);">{{ action }} Cloud Resource</h2>
+    <p style="color: var(--text-muted);">{% if action == 'Edit' %}Update the details of an existing resource.{% else %}Add a new manually tracked cloud resource to the platform.{% endif %}</p>
+</div>
+
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <form method="POST">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div class="form-group">
+                <label for="resource_id">Resource ID</label>
+                <input type="text" id="resource_id" name="resource_id" value="{{ resource.get('Resource_ID', '') if resource else '' }}" required placeholder="e.g. i-0abcd1234efgh5678">
+            </div>
+            <div class="form-group">
+                <label for="type">Resource Type</label>
+                <input type="text" id="type" name="type" value="{{ resource.get('Resource_Type', '') if resource else '' }}" required placeholder="e.g. EC2 Instance">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div class="form-group">
+                <label for="region">Region</label>
+                <input type="text" id="region" name="region" value="{{ resource.get('Region', '') if resource else '' }}" required placeholder="e.g. us-east-1">
+            </div>
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status" required>
+                    <option value="running" {% if resource and resource.get('Status', '').lower() == 'running' %}selected{% endif %}>Running</option>
+                    <option value="stopped" {% if resource and resource.get('Status', '').lower() == 'stopped' %}selected{% endif %}>Stopped</option>
+                    <option value="idle" {% if resource and resource.get('Status', '').lower() == 'idle' %}selected{% endif %}>Idle</option>
+                    <option value="underutilized" {% if resource and resource.get('Status', '').lower() == 'underutilized' %}selected{% endif %}>Underutilized</option>
+                    <option value="terminated" {% if resource and resource.get('Status', '').lower() == 'terminated' %}selected{% endif %}>Terminated</option>
+                </select>
+            </div>
+        </div>
+
+        <h4 style="margin: 2rem 0 1rem; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">Usage & Billing</h4>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div class="form-group">
+                <label for="cost">Monthly Cost ($)</label>
+                <input type="number" id="cost" name="cost" step="0.01" value="{{ resource.get('Cost', '') if resource else '' }}" required placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label for="usage_hours">Usage Hours</label>
+                <input type="number" id="usage_hours" name="usage_hours" step="0.1" value="{{ resource.get('Usage_Hours', '') if resource else '' }}" required placeholder="730">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="form-group">
+                <label for="cpu">CPU Utilization (%)</label>
+                <input type="number" id="cpu" name="cpu" step="0.1" value="{{ resource.get('CPU_Utilization', '') if resource else '' }}" placeholder="0.0">
+            </div>
+            <div class="form-group">
+                <label for="memory">Memory Utilization (%)</label>
+                <input type="number" id="memory" name="memory" step="0.1" value="{{ resource.get('Memory_Utilization', '') if resource else '' }}" placeholder="0.0">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn" style="background: rgba(255,255,255,0.1);">Cancel</a>
+            <button type="submit" class="btn btn-accent">{{ action }} Resource</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
